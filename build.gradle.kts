@@ -1,8 +1,7 @@
 plugins {
     kotlin("jvm") version embeddedKotlinVersion
-    kotlin("kapt") version "1.3.21"
+    kotlin("kapt") version embeddedKotlinVersion
     `java-library`
-    `maven-publish`
     `signing`
 
     id("io.codearte.nexus-staging") version "0.21.2"
