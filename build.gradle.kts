@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.3.41"
+    kotlin("jvm") version embeddedKotlinVersion
     kotlin("kapt") version "1.3.21"
     `java-library`
     `maven-publish`
