@@ -1,6 +1,6 @@
 package io.johnsonlee.buildprops
 
-import org.gradle.api.internal.AbstractTask
+import org.gradle.api.DefaultTask
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.SourceSet
@@ -11,7 +11,7 @@ import java.util.StringTokenizer
 /**
  * @author johnsonlee
  */
-open class BuildGenerator : AbstractTask() {
+open class BuildGenerator : DefaultTask() {
 
     @get:OutputDirectory
     val output: File = project.getGeneratedSourceDir(project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME))
