@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "io.johnsonlee.buildprops"
-version = "1.0.0"
+version = "1.1.0"
 description = "Generate Build.java for module"
 
 
