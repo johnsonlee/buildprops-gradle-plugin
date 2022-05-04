@@ -1,6 +1,7 @@
 package io.johnsonlee.buildprops
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.SourceSet
@@ -14,11 +15,16 @@ import java.util.StringTokenizer
 open class BuildGenerator : DefaultTask() {
 
     @get:OutputDirectory
-    val output: File = project.getGeneratedSourceDir(project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME))
+    val output: File = project.getGeneratedSourceDir(
+        project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
+    )
 
     @TaskAction
     fun generate() {
-        val pkg = mkpkg("${project.group}.${project.name}")
+        val group = project.group ?: project.rootProject.group
+        val name = project.name
+        val version = project.version.takeIf { it == Project.DEFAULT_VERSION } ?: project.rootProject.version
+        val pkg = mkpkg("${group}.${name}")
         val path = "${pkg.replace(".", File.separator)}${File.separator}Build.java"
         val revision = File(project.rootProject.projectDir, GIT_LOG_HEAD).takeIf {
             it.exists() && it.canRead() && it.length() > 0
@@ -29,22 +35,22 @@ open class BuildGenerator : DefaultTask() {
         File(output, path).also {
             it.parentFile.mkdirs()
             it.createNewFile()
-        }.printWriter().use {
-            it.apply {
-                it.println("""
+        }.printWriter().use { out ->
+            out.println(
+                """
                 /**
                  * DO NOT MODIFY! This file is generated automatically.
                  */
                 package $pkg;
                 
                 public interface Build {
-                    String GROUP = "${project.group}";
-                    String ARTIFACT = "${project.name}";
-                    String VERSION = "${project.version}";
+                    String GROUP = "$group";
+                    String ARTIFACT = "$name";
+                    String VERSION = "$version";
                     String REVISION = "$revision";
                 }
-                """.trimIndent())
-            }
+                """.trimIndent()
+            )
         }
     }
 

@@ -26,10 +26,12 @@ class BuildPropsPlugin : Plugin<Project> {
 
         sourceSets.filter {
             it.name == SourceSet.MAIN_SOURCE_SET_NAME
-        }.forEach { sourceSet ->
-            (project.tasks.findByName(sourceSet.getCompileTaskName("java"))?.dependsOn(buildProps) as? SourceTask)?.source(buildProps.output)
-            (project.tasks.findByName(sourceSet.getCompileTaskName("groovy"))?.dependsOn(buildProps) as? SourceTask)?.source(buildProps.output)
-            (project.tasks.findByName(sourceSet.getCompileTaskName("kotlin"))?.dependsOn(buildProps) as? SourceTask)?.source(buildProps.output)
+        }.map { sourceSet ->
+            listOf("java", "kotlin", "groovy").mapNotNull { lang ->
+                project.tasks.findByName(sourceSet.getCompileTaskName(lang))
+            }
+        }.flatten().forEach {
+            (it.dependsOn(buildProps) as? SourceTask)?.source(buildProps.output)
         }
     }
 
