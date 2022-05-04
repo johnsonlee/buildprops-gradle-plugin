@@ -2,6 +2,7 @@ package io.johnsonlee.buildprops
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.UnknownTaskException
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceTask
@@ -20,16 +21,27 @@ class BuildPropsPlugin : Plugin<Project> {
         val convention = project.convention
         val javaPlugin = convention.getPlugin(JavaPluginConvention::class.java)
         val sourceSets = javaPlugin.sourceSets
-        val buildProps = project.tasks.create("generateBuildJavaFile", BuildGenerator::class.java)
+        val compileTasks = sourceSets.filter {
+            it.name == SourceSet.MAIN_SOURCE_SET_NAME
+        }.map { sourceSet ->
+            listOf("java", "kotlin", "groovy").map { lang ->
+                sourceSet.getCompileTaskName(lang)
+            }
+        }.flatten().mapNotNull { taskName ->
+            try {
+                project.tasks.named(taskName)
+            } catch (_: UnknownTaskException) {
+                null
+            }
+        }
 
         project.configureIdeaModule(sourceSets)
-
-        sourceSets.filter {
-            it.name == SourceSet.MAIN_SOURCE_SET_NAME
-        }.forEach { sourceSet ->
-            (project.tasks.findByName(sourceSet.getCompileTaskName("java"))?.dependsOn(buildProps) as? SourceTask)?.source(buildProps.output)
-            (project.tasks.findByName(sourceSet.getCompileTaskName("groovy"))?.dependsOn(buildProps) as? SourceTask)?.source(buildProps.output)
-            (project.tasks.findByName(sourceSet.getCompileTaskName("kotlin"))?.dependsOn(buildProps) as? SourceTask)?.source(buildProps.output)
+        project.tasks.register("generateBuildJavaFile", BuildGenerator::class.java) { buildProps ->
+            compileTasks.forEach { compile ->
+                compile.configure {
+                    (it.dependsOn(buildProps) as? SourceTask)?.source(buildProps.output)
+                }
+            }
         }
     }
 
