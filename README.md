@@ -15,7 +15,7 @@ Enable `buildprops-gradle-plugin` by configuring `build.gradle`
 
 ```kotlin
 plugins {
-    id("io.johnsonlee.buildprops") version "1.1.0"
+    id("io.johnsonlee.buildprops") version "1.2.0"
 }
 ```
 
